@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Planets, People, Usuario
+from models import db, User, Planets, People, Usuario, Favorites
 #from models import Person
 
 app = Flask(__name__)
@@ -50,7 +50,8 @@ def get_planets():
     # print(planets)
 
     response_body = {
-        "msg": "RESPUESTA DE CHARLY"
+        "msg": "RESPUESTA DE CHARLY",
+        "Estos planetas": results
     }
 
     return jsonify(response_body), 200
@@ -74,7 +75,8 @@ def get_people():
     print(results)
     
     response_body = {
-        "msg": "Hello, this is your GET /people response "
+        "msg": "Hello, this is your GET /people response ",
+        "Esta gente": results
     }
 
     return jsonify(response_body), 200
@@ -103,16 +105,45 @@ def get_users():
     return jsonify(results), 200
 
 @app.route('/users/<int:usuario_id>', methods=['GET'])
-def get_users_one():
+def get_users_one(usuario_id):
     usuario = Usuario.query.filter_by(id=usuario_id).first()
     result = usuario.serialize()
     print(result)
     
     response_body = {
-        "msg": "FUNCIONO"
+        "msg": "FUNCIONO",
+        "Estos son los usuarios": result
     }
 
     return jsonify(response_body), 200
+
+@app.route('/users/<int:user_id>/favorites', methods=['GET'])
+def get_users_favorites(user_id):
+    favorites_by = Favorites.query.filter_by(usuario_id=user_id).all()
+   
+    print(favorites_by)
+    
+    results = list(map(lambda item: item.serialize2(), favorites_by))
+    print(results)
+    response_body = {
+        "msg": "FUNCIONO",
+        "Estos son los favoritos del usuario": results
+    }
+
+    return jsonify(response_body), 200
+
+
+# @app.route('/users/<int:user_id>', methods=['GET'])
+# def get_one_user(user_id):
+#     people = People.query.filter_by(id=people_id).first()
+#     # results = list(map(lambda item: item.serialize(), people))
+#     print(people.serialize())
+    
+#     response_body = people.serialize()
+
+#     return jsonify(response_body), 200
+
+
 
 
 # this only runs if `$ python src/main.py` is executed

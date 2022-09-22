@@ -22,17 +22,20 @@ class Usuario(db.Model):
     # Here we define columns for the table person
     # Notice that each column is also a normal Python instance attribute.
     id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(80), unique=False, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     favorito = db.relationship('Favorites', backref='user', lazy=True)
     
     def __repr__(self):
-        return '<Usuario %r>' % self.id
+        return '<Usuario %r>' % self.nombre
 
     def serialize(self):
         return {
+            "nombre": self.nombre,
             "id": self.id,
             "email": self.email,
+            "favorito": list(map(lambda item: item.serialize(), self.favorito))
             # do not serialize the password, its a security breach
         }
 
@@ -82,20 +85,30 @@ class Favorites(db.Model):
     # Notice that each column is also a normal Python instance attribute.
     id = db.Column(db.Integer, primary_key=True)
     people_id = db.Column(db.Integer, db.ForeignKey('people.id'),
-        nullable=False)
+        nullable=True)
     planets_id = db.Column(db.Integer, db.ForeignKey('planets.id'),
-        nullable=False)
+        nullable=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'),
         nullable=False)
 
     def __repr__(self):
         return '<Favorites %r>' % self.id
 
+    def serialize2(self):
+        people = People.query.filter_by(id=self.people_id).first()
+        gentuza = people.serialize()
+        print(gentuza, "ESTE ES")
+
+        return {
+            "nombre": gentuza['name']
+        }
+
+
     def serialize(self):
         return {
             "id": self.id,
             "people_id": self.people_id,
             "planets_id": self.planets_id,
-            "user_id": self.user_id
+            "usuario_id": self.usuario_id
             # do not serialize the password, its a security breach
         }
